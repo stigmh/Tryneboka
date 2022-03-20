@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-
+using Tryneboka.Models;
 
 namespace Tryneboka.Data {
     public static class DbInitializer {
@@ -10,16 +10,16 @@ namespace Tryneboka.Data {
                 return; // DB has been seeded
             }
 
-            var users = new IdentityUser[]
+            var users = new User[]
             {
-                new IdentityUser{UserName="Y_122",PasswordHash="austin"},
-                new IdentityUser{UserName="Snoo26837",PasswordHash="princess"},
-                new IdentityUser{UserName="boiwotm88",PasswordHash="diamond"},
-                new IdentityUser{UserName="beerbellybegone",PasswordHash="qwertyui"}
+                new User{UserName="Y_122",PasswordHash="austin"},
+                new User{UserName="Snoo26837",PasswordHash="princess"},
+                new User{UserName="boiwotm88",PasswordHash="diamond"},
+                new User{UserName="beerbellybegone",PasswordHash="qwertyui"}
             };
 
-            var userStore = new UserStore<IdentityUser>(context);
-            var hasher = new PasswordHasher<IdentityUser>();
+            var userStore = new UserStore<User>(context);
+            var hasher = new PasswordHasher<User>();
 
             foreach (var user in users) {
                 user.PasswordHash = hasher.HashPassword(user, user.PasswordHash);
@@ -38,34 +38,43 @@ namespace Tryneboka.Data {
 
             context.SaveChanges();
 
-            /*
-            var posts = new Post[]
-            {
-                new Post{
-                    UserID=4,
-                    Created=DateTime.Parse("Mar 12, 2020 19:03"),
-                    Content="Oh wow, this is the best social network!"
-                },
-                new Post{
-                    UserID=2,
-                    Created=DateTime.Parse("Aug 20, 2020 02:10"),
-                    Content="No\nDiggidy\n\n!"
-                },
-                new Post{
-                    UserID=1,
-                    Created=DateTime.Parse("Nov 11, 2020 23:45"),
-                    Content="No\nDiggidy\n\n!"
-                },
-                new Post{
-                    UserID=3,
-                    Created=DateTime.Parse("Dec 22, 2021 13:37"),
-                    Content="\"Do or do not, there is no try\" - Gandalf Dumbledore"
-                }
+            var savedUsers = context.Users.ToList();
+
+            var postContents = new List<string>(){
+                "Oh wow, this is the best social network!",
+                "Actually... here's 10 reasons why Android is better than iPhone",
+                "No\nDiggidy\n\n!",
+                "\"Do or do not, there is no try\" - Gandalf Dumbledore",
+                "That is a game I've never played and know nothing about.",
+                "my grandson is suposed to be having a job interview is he there"
             };
+
+            string[] postDates = {
+                "Mar 12, 2020 19:03",
+                "Aug 20, 2020 02:10",
+                "Nov 11, 2020 23:45",
+                "Dec 22, 2021 13:37"
+            };
+
+            var random = new Random();
+            var postDateIdx = 0;
+            var posts = new List<Post>();
+
+            foreach (var savedUser in savedUsers) {
+                var postIdx = random.Next(postContents.Count);
+                Console.WriteLine($"User {savedUser.UserName}'s ID is ${savedUser.Id}\n");
+
+                posts.Add(new Post{
+                    Content = postContents[postIdx],
+                    Created = DateTime.Parse(postDates[postDateIdx++]),
+                    UserId = savedUser.Id
+                });
+
+                postContents.RemoveAt(postIdx);
+            }
 
             context.Posts.AddRange(posts);
             context.SaveChanges();
-            */
         }
     }
 }
