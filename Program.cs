@@ -74,7 +74,7 @@ using (var scope = app.Services.CreateScope()) {
     DbInitializer.Initialize(context);
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); Intentionally disabled (insecure)
 app.UseStaticFiles();
 
 app.UseRouting();
