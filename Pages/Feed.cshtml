@@ -1,0 +1,17 @@
+@page
+@model FeedModel
+@{
+    ViewData["Title"] = "Feed";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Feed</h1>
+
+    @foreach(var post in Model.Posts) {
+        <div>
+            <p><em>@Html.DisplayFor(modelItem => post.Created)</em></p>
+            <p><strong>@Html.DisplayFor(modelItem => post.UserId)</strong></p>
+            <p>@Html.DisplayFor(modelItem => post.Content)</p>
+        </div>
+    }
+</div>
