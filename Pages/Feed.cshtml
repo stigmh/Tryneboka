@@ -9,9 +9,9 @@
 
     @foreach(var post in Model.Posts) {
         <div>
-            <p><em>@Html.DisplayFor(modelItem => post.Created)</em></p>
-            <p><strong>@Html.DisplayFor(modelItem => post.UserId)</strong></p>
-            <p>@Html.DisplayFor(modelItem => post.Content)</p>
+            <p><em>@Html.DisplayFor(modelItem => post.Published)</em></p>
+            <p><strong>@Html.DisplayFor(modelItem => post.Username)</strong></p>
+            <p>@Html.DisplayFor(modelItem => post.Post)</p>
         </div>
     }
 </div>
