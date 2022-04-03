@@ -4,10 +4,8 @@
     ViewData["Title"] = "Feed";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Feed</h1>
-
-    <div>
+<div>
+    <div class="post-submit">
         <form method="post">
             <div class="form-group">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -15,17 +13,21 @@
                 <textarea asp-for="Post.Content" class="form-control" autocomplete="content" aria-required="true"></textarea>
                 <span asp-validation-for="Post.Content" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group text-end">
                 <input type="submit" value="Publish" class="btn btn-primary" />
             </div>
         </form>
     </div>
 
     @foreach(var post in Model.Posts) {
-        <div>
-            <p><em>@Html.DisplayFor(modelItem => post.Published)</em></p>
-            <p><strong>@Html.DisplayFor(modelItem => post.Username)</strong></p>
-            <p>@Html.Raw(post.Post)</p>
+        <div class="post">
+            <div class="header">
+                <div class="username">@Html.DisplayFor(modelItem => post.Username)</div>
+                <div class="published">@Html.DisplayFor(modelItem => post.Published)</div>
+            </div>
+            <div class="content">
+                @Html.Raw(post.Post)
+            </div>
         </div>
     }
 </div>
