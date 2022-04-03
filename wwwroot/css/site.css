@@ -16,3 +16,41 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+header, footer {
+  background-color:rgba(0, 0, 0, .8);
+  color: #eee;
+}
+
+.post, .post-submit {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin: 1rem 0;
+}
+
+.post {
+  background-color:rgba(0, 0, 0, .10);
+}
+
+.post .header {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.post .header .username {
+  font-weight: bold;
+}
+
+.post .header .published {
+  font-style: italic;
+  font-size: 0.8125rem;
+  color: rgba(51, 51, 51, .6);
+}
+
+.post-submit {
+  background-color:rgba(0, 0, 0, .05);
+}
+
+.post-submit .form-group {
+  margin: 0.5rem 0;
+}
