@@ -1,6 +1,12 @@
+#nullable enable
+
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Tryneboka.Data;
 using Tryneboka.Models;
 
@@ -26,8 +32,7 @@ public class FeedModel : PageModel
 
     public IList<FeedViewModel> Posts { get; set; }
 
-    public async Task OnGetAsync()
-    {
+    private async Task LoadPosts() {
         Posts = await _context.Posts.Join(
             _context.Users,
             post => post.UserId,
@@ -38,10 +43,26 @@ public class FeedModel : PageModel
                 Username = user.UserName,
                 Created = post.Created,
                 Published = DateTimeToRelativeTime(post.Created),
-                Post = post.Content
+                Post = Regex.Replace(
+                    post.Content,
+                    "<[/]?script>",
+                    "&lt;script&gt;",
+                    RegexOptions.IgnoreCase,
+                    TimeSpan.FromSeconds(.25)
+                )
             }
         ).OrderByDescending(p => p.Created
         ).ToListAsync();
+    }
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        if (this.User.Identity == null || !this.User.Identity.IsAuthenticated) {
+            return LocalRedirect("/Identity/Account/Login");
+        }
+
+        await LoadPosts();
+        return Page();
     }
 
     private static String DateTimeToRelativeTime(DateTime time) {
@@ -104,5 +125,46 @@ public class FeedModel : PageModel
                 return $"{years} years ago";
             }
         }
+    }
+
+    public class InputModel {
+        [Required]
+        [StringLength(512, ErrorMessage = "The post must be at least {2} and at max {1} characters long.", MinimumLength = 3)]
+        [Display(Name = "What's on your mind?")]
+        public string Content { get; set; } = "";
+    }
+
+    [BindProperty]
+    public InputModel Post { get; set; }
+
+    public async Task<IActionResult> OnPostAsync() {
+        if (this.User.Identity == null || !this.User.Identity.IsAuthenticated) {
+            return LocalRedirect("/Identity/Account/Login");
+        }
+
+        var userId = this.User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (userId == null) {
+            ModelState.AddModelError(string.Empty,
+                "Unable to retrieve user ID");
+            await LoadPosts();
+            return Page();
+        }
+
+        if (!ModelState.IsValid) {
+            await LoadPosts();
+            return Page();
+        }
+
+        var post = new Post();
+        post.Content = Post.Content;
+        post.Created = DateTime.UtcNow;
+        post.UserId = userId.Value;
+
+        _context.Posts.Add(post);
+        await _context.SaveChangesAsync();
+
+        await LoadPosts();
+        return Page();
     }
 }
