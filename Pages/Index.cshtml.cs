@@ -18,6 +18,6 @@ public class IndexModel : PageModel
             return LocalRedirect("/Feed");
         }
 
-        return Page();
+        return LocalRedirect("/Identity/Account/Login");
     }
 }

@@ -17,9 +17,17 @@ body {
   margin-bottom: 60px;
 }
 
-header, footer {
-  background-color:rgba(0, 0, 0, .8);
-  color: #eee;
+h1 img {
+  color: #0a58ca;
+  width: 3rem;
+}
+
+main input, main button, main textarea {
+  margin: 0.5rem 0;
+}
+
+section img {
+  width: 100%;
 }
 
 .post, .post-submit {
