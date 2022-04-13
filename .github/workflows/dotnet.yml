@@ -17,6 +17,8 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+    - name: Check for vulnerable dependencies
+      run: dotnet list package --vulnerable
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -25,9 +27,37 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish Tryneboka.csproj -c Release -o release
+    - name: Copy CI/CD files
+      run: cp cicd/* release/
     - name: Upload release Artifact
       uses: actions/upload-artifact@v3
       with:
         name: Tryneboka
         path: release/**
+        retention-days: 1
         if-no-files-found: error
+
+  docker:
+
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download dotnet artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: Tryneboka
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Build docker image
+      run: docker build . --file Dockerfile -o result
+    - name: Upload built docker image
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrynebokaDocker
+        path: result/**
+        if-no-files-found: error
+    - uses: geekyeggo/delete-artifact@v1
+      with:
+        name: Tryneboka
+
