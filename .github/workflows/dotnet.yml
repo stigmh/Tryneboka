@@ -47,6 +47,8 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: Tryneboka
+    - name: Set executable permissions
+      run: chmod +x Tryneboka
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v1
     - name: Docker Hub login
