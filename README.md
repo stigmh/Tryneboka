@@ -10,3 +10,5 @@ Pull and run the application with Docker as following. The application will be a
 ```
 docker run -p 8080:80 stigmha/tryneboka
 ```
+
+Last updated 2022-06-19
