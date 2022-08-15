@@ -1,6 +1,21 @@
-# syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/dotnet/aspnet
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+
+WORKDIR /build
+
 COPY . .
-CMD ["./Tryneboka"]
-EXPOSE 80 443
+
+RUN dotnet restore
+
+RUN dotnet build --no-restore
+
+RUN dotnet publish ./Tryneboka.csproj -c Release -o release
+
+RUN chmod +x ./release/Tryneboka
+
+#FROM mcr.microsoft.com/dotnet/runtime:6.0
+FROM mcr.microsoft.com/dotnet/aspnet
+
+WORKDIR /app
+COPY --from=build /build/release .
+
+ENTRYPOINT ["./Tryneboka"]
