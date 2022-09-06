@@ -65,25 +65,6 @@ namespace Tryneboka.Areas.Identity.Pages.Account
         /// </summary>
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        public class UsernameAttribute : ValidationAttribute {
-            public string GetErrorMessage() =>
-                "Username already taken.";
-
-            protected override ValidationResult? IsValid(
-                object? value, ValidationContext validationContext)
-            {
-                var input = (InputModel)validationContext.ObjectInstance;
-                string[] blacklist = { "admin", "administrator", "webadmin", "system" };
-
-                if (blacklist.Contains(input.Username.ToLower()))
-                {
-                    return new ValidationResult(GetErrorMessage());
-                }
-
-                return ValidationResult.Success;
-            }
-        }
-
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -95,7 +76,6 @@ namespace Tryneboka.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [Username]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 3)]
             [Display(Name = "User name")]
             public string Username { get; set; }
@@ -140,24 +120,38 @@ namespace Tryneboka.Areas.Identity.Pages.Account
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+            if (Input != null && !String.IsNullOrEmpty(Input.Username)) {
+                string[] denylist = { "admin", "administrator", "webadmin", "system" };
+
+                if (denylist.Contains(Input.Username.ToLower())) {
+                    ModelState.AddModelError("Input.Username", "Username already taken.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                var user = CreateUser();
+                var existingUser = await _userManager.FindByNameAsync(Input.Username);
 
-                await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, "", CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
+                if (existingUser != null) {
+                    ModelState.AddModelError("Input.Username", "Username already taken.");
+                } else {
+                    var user = CreateUser();
 
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect("/Feed");
-                }
+                    await _userStore.SetUserNameAsync(user, Input.Username, CancellationToken.None);
+                    await _emailStore.SetEmailAsync(user, "", CancellationToken.None);
+                    var result = await _userManager.CreateAsync(user, Input.Password);
 
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("User created a new account with password.");
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect("/Feed");
+                    }
+
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
             }
 
